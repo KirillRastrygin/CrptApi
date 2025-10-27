@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CrptApi {
 
     // api честного знака для создания документов
-    private static final String CREATE_DOCUMENT_API_URL = "https://ismp.crpt.ru/api/v3/lk/documents/create";
+    private final String createDocumentApiUrl;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
 
@@ -29,10 +29,11 @@ public class CrptApi {
     private final LinkedList<Long> requestTimestamps = new LinkedList<>();
     private final ReentrantLock lock = new ReentrantLock(true);
 
-    public CrptApi(TimeUnit timeUnit, int requestLimit) {
+    public CrptApi(TimeUnit timeUnit, int requestLimit, String createDocumentApiUrl) {
         if (requestLimit <= 0) {
             throw new IllegalArgumentException("Request limit must be positive");
         }
+        this.createDocumentApiUrl = createDocumentApiUrl;
         this.httpClient = HttpClient.newHttpClient();
         this.timeUnit = timeUnit;
         this.requestLimit = requestLimit;
@@ -63,7 +64,7 @@ public class CrptApi {
 
         // Создаём HTTP-запрос
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(CREATE_DOCUMENT_API_URL))
+                .uri(URI.create(createDocumentApiUrl))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + authToken)
                 .POST(HttpRequest.BodyPublishers.ofString(requestJson))
@@ -204,8 +205,11 @@ public class CrptApi {
 
 
     public static void main(String[] args) throws InterruptedException {
+
+        final String CREATE_DOCUMENT_API_URL = "https://ismp.crpt.ru/api/v3/lk/documents/create";
+
         // Лимит 2 запроса в 1 секунду
-        CrptApi api = new CrptApi(TimeUnit.SECONDS, 2);
+        CrptApi api = new CrptApi(TimeUnit.SECONDS, 2, CREATE_DOCUMENT_API_URL);
 
         // Тестовый токен
         String testToken = "TEST_TOKEN";
