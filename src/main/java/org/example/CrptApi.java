@@ -243,7 +243,7 @@ public class CrptApi {
             int threadNumber = i;
             executor.submit(() -> {
                 try {
-                    // Кодируем документ в Base64
+                    // Кодируем документ в Base64 для имитации настоящего API
                     String json = api.objectMapper.writeValueAsString(document);
                     String base64Document = Base64.getEncoder().encodeToString(json.getBytes());
 
@@ -256,6 +256,7 @@ public class CrptApi {
         }
 
         executor.shutdown();
+        executor.awaitTermination(1, TimeUnit.MINUTES);
         System.out.println("All threads finished.");
     }
 
